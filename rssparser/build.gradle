@@ -8,7 +8,7 @@ ext {
     PUBLISH_ARTIFACT_ID = 'rssparser'
 }
 
-apply from: "${rootProject.projectDir}/gradle/publish-mavencentral.gradle"
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion versions.targetSdk
@@ -59,4 +59,28 @@ dependencies {
     testImplementation "org.mockito:mockito-inline:${versions.mockitoInline}"
 }
 
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                // Applies the component for the release build variant.
+                from components.release
 
+                // You can then customize attributes of the publication as shown below.
+                groupId = 'com.prof18.rssparser'
+                artifactId = 'final'
+                version = '1.0'
+            }
+            // Creates a Maven publication called “debug”.
+//            debug(MavenPublication) {
+//                // Applies the component for the debug build variant.
+//                from components.debug
+//
+//                groupId = 'com.prof18.rssparser'
+//                artifactId = 'final-debug'
+//                version = '1.0'
+//            }
+        }
+    }
+}
