@@ -16,11 +16,11 @@ import org.robolectric.annotation.Config
 
 @ExperimentalCoroutinesApi
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.P])
+@Config(sdk = [Build.VERSION_CODES.LOLLIPOP])
 class ParserTest {
-    
+
     private lateinit var parser: Parser
-    
+
     @After
     fun tearDown() {
         parser.cacheManager?.database?.close()
@@ -30,8 +30,8 @@ class ParserTest {
     @Test
     fun `cacheManager is null if no context provided`() {
         parser = Parser.Builder()
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         assertNull(parser.cacheManager)
     }
@@ -39,8 +39,8 @@ class ParserTest {
     @Test
     fun `cacheManager is null if not expiration date provided`() {
         parser = Parser.Builder()
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         assertNull(parser.cacheManager)
     }
@@ -48,9 +48,9 @@ class ParserTest {
     @Test
     fun `cacheManager is null if expiration date is not provided but context is provided`() {
         parser = Parser.Builder()
-                .context(ApplicationProvider.getApplicationContext())
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .context(ApplicationProvider.getApplicationContext())
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         assertNull(parser.cacheManager)
     }
@@ -58,9 +58,9 @@ class ParserTest {
     @Test
     fun `cacheManager is null if expiration date is provided but context is not provided`() {
         parser = Parser.Builder()
-                .cacheExpirationMillis(ChannelFactory.getOneDayCacheDuration())
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .cacheExpirationMillis(ChannelFactory.getOneDayCacheDuration())
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         assertNull(parser.cacheManager)
     }
@@ -68,8 +68,8 @@ class ParserTest {
     @Test
     fun `getChannel returns data`() = runBlocking {
         parser = Parser.Builder()
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         val channel = parser.getChannel("https://feedurl.com")
         assertNotNull(channel)
@@ -78,10 +78,10 @@ class ParserTest {
     @Test
     fun `getChannel returns data from net and cache data`() = runBlocking {
         parser = Parser.Builder()
-                .context(ApplicationProvider.getApplicationContext())
-                .cacheExpirationMillis(ChannelFactory.getOneDayCacheDuration())
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .context(ApplicationProvider.getApplicationContext())
+            .cacheExpirationMillis(ChannelFactory.getOneDayCacheDuration())
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         val cacheManagerSpy = spy(parser.cacheManager)
         parser.cacheManager = cacheManagerSpy
@@ -104,8 +104,8 @@ class ParserTest {
     @Test(expected = Exception::class)
     fun `getChannel throws exception when network issue`() = runBlockingTest {
         parser = Parser.Builder()
-                .okHttpClient(ChannelFactory.getErrorOkHttpClientForTesting())
-                .build()
+            .okHttpClient(ChannelFactory.getErrorOkHttpClientForTesting())
+            .build()
 
         parser.getChannel("https://www.url.it")
     }
@@ -114,8 +114,8 @@ class ParserTest {
     @Test
     fun `getChannel triggers onFinish when data are found`() {
         parser = Parser.Builder()
-                .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
-                .build()
+            .okHttpClient(ChannelFactory.getOkHttpClientForTesting(ChannelFactory.getFeedString()))
+            .build()
 
         parser.executorService = SameThreadExecutorService()
         val argumentCaptor = argumentCaptor<Channel>()
@@ -136,8 +136,8 @@ class ParserTest {
     @Test
     fun `getChannel triggers onError when network issue`() {
         parser = Parser.Builder()
-                .okHttpClient(ChannelFactory.getErrorOkHttpClientForTesting())
-                .build()
+            .okHttpClient(ChannelFactory.getErrorOkHttpClientForTesting())
+            .build()
 
         val onTaskCompleted = mock<OnTaskCompleted>()
         parser.onFinish(onTaskCompleted)
@@ -147,6 +147,17 @@ class ParserTest {
 
         verify(onTaskCompleted, times(1)).onError(any())
         verify(onTaskCompleted, times(0)).onTaskCompleted(any())
+    }
+
+    @Test
+    fun test() {
+        parser = Parser.Builder().build()
+        val channel = runBlocking {
+            parser.getChannel("http://feeds.trendmicro.com/TrendMicroResearch")
+        }
+        val article =
+            channel.articles.first { it.pubDate == "Fri, 18 Jun 2021 00:00:00 +0000" }
+        assertEquals(article.title, "This Week in Security News June 18, 2021")
     }
 }
 

@@ -85,7 +85,8 @@ internal object CoreXMLParser {
                                 channelImage?.title = xmlPullParser.nextText().trim()
                             }
                             insideItem -> {
-                                currentArticle.title = xmlPullParser.nextText().trim()
+                                if (currentArticle.title == null)
+                                    currentArticle.title = xmlPullParser.nextText().trim()
                             }
                             else -> {
                                 channelTitle = xmlPullParser.nextText().trim()
